@@ -70,9 +70,9 @@
   flex-wrap: wrap;
 }
 
-// --- Hero / About (full screen) ---
+// --- Hero / About ---
 .hero {
-  min-height: calc(100vh - 64px);
+  min-height: min(82vh, 740px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -183,6 +183,40 @@
   text-align: center;
   color: $text-muted;
   margin-top: $s-2;
+}
+
+// --- Home content sections ---
+.home-section {
+  padding-block: $s-6;
+}
+.section-head {
+  margin-bottom: $s-5;
+}
+.section-more {
+  margin-top: $s-5;
+  text-align: center;
+}
+
+// Post-card grid — fills the available width with real content.
+.post-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+// Outlined "ghost" button used for secondary calls to action.
+.ghost-btn {
+  display: inline-block;
+  padding: $s-2 $s-4;
+  border: 1px solid $line-strong;
+  border-radius: 999px;
+  color: $text;
+  font-family: $font-mono;
+  font-size: 0.9rem;
+  transition: color $t-fast, border-color $t-fast, box-shadow $t-mid;
+  &:hover, &:focus-visible {
+    color: $neon-cyan;
+    border-color: rgba($neon-cyan, 0.6);
+    box-shadow: 0 0 0 1px rgba($neon-cyan, 0.3), 0 10px 30px -14px rgba($neon-cyan, 0.6);
+  }
 }
 
 // --- 404 ---

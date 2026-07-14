@@ -12,14 +12,14 @@
 // within the content column rather than spanning the full viewport width.
 .blog-doc-content {
   .graph-section { padding: 0; }
-  .graph-shell { width: 100%; }
+  .graph-shell { width: min(100%, 640px); }
 }
 
 .graph-shell {
   position: relative;
-  width: min(1400px, 94vw);
+  width: min(640px, 94vw);
   margin-inline: auto;
-  height: clamp(400px, 58vh, 640px);
+  aspect-ratio: 1 / 1;
   border: 1px solid $line;
   border-radius: $radius;
   background:

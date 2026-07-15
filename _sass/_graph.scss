@@ -12,14 +12,14 @@
 // within the content column rather than spanning the full viewport width.
 .blog-doc-content {
   .graph-section { padding: 0; }
-  .graph-shell { width: min(100%, 640px); }
+  .graph-shell { width: min(100%, 720px); }
 }
 
 .graph-shell {
   position: relative;
-  width: min(640px, 94vw);
+  width: min(720px, 94vw);
   margin-inline: auto;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
   border: 1px solid $line;
   border-radius: $radius;
   background:
@@ -34,20 +34,32 @@
 
 .graph-link {
   stroke: $line-strong;
-  stroke-width: 1px;
+  stroke-width: 1.4px;
+  stroke-linecap: round;
+  opacity: 0.7;
 }
 
 .graph-node {
   cursor: pointer;
-  circle {
+  circle.graph-node-core {
     stroke: rgba(#000, 0.5);
     stroke-width: 1px;
     transition: filter $t-fast;
   }
-  &:hover circle { filter: drop-shadow(0 0 8px currentColor); }
+  // Soft coloured halo behind the solid core gives each node depth.
+  circle.graph-node-halo {
+    opacity: 0.18;
+    filter: blur(4px);
+    pointer-events: none;
+    transition: opacity $t-fast;
+  }
+  &:hover circle.graph-node-core { filter: drop-shadow(0 0 10px currentColor); }
+  &:hover circle.graph-node-halo { opacity: 0.4; }
 }
-.node-blog circle { color: $neon-cyan; filter: drop-shadow(0 0 5px rgba($neon-cyan, 0.5)); }
-.node-section circle { color: $neon-magenta; filter: drop-shadow(0 0 5px rgba($neon-magenta, 0.5)); }
+.node-blog circle.graph-node-core { color: $neon-cyan; filter: drop-shadow(0 0 6px rgba($neon-cyan, 0.55)); }
+.node-blog circle.graph-node-halo { color: $neon-cyan; }
+.node-section circle.graph-node-core { color: $neon-magenta; filter: drop-shadow(0 0 6px rgba($neon-magenta, 0.55)); }
+.node-section circle.graph-node-halo { color: $neon-magenta; }
 
 // Hover-highlight: while a node is focused the graph fades unrelated nodes
 // and links so the neighbourhood stands out.
@@ -57,15 +69,21 @@
   .graph-node.is-active,
   .graph-node.is-neighbor,
   .graph-link.is-active { opacity: 1; }
-  .graph-node.is-active circle { filter: drop-shadow(0 0 10px currentColor); }
+  .graph-node.is-active circle.graph-node-core { filter: drop-shadow(0 0 12px currentColor); }
+  .graph-node.is-active circle.graph-node-halo { opacity: 0.5; }
 }
-.graph-link.is-active { stroke: $neon-cyan; stroke-width: 1.6px; }
+.graph-link.is-active { stroke: $neon-cyan; stroke-width: 2px; opacity: 1; }
 
 .graph-label {
-  fill: $text-muted;
+  fill: $text;
   font-family: $font-mono;
-  font-size: 10px;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba($bg-deep, 0.85);
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 .graph-legend {

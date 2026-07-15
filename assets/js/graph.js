@@ -56,10 +56,18 @@
         .on("zoom", function (event) { root.attr("transform", event.transform); }));
 
       var simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(function (d) { return d.id; }).distance(70).strength(0.6))
-        .force("charge", d3.forceManyBody().strength(-220))
+        .force("link", d3.forceLink(data.links).id(function (d) { return d.id; }).distance(90).strength(0.5))
+        // Bound the repulsion so disconnected clusters don't fling apart to
+        // the far corners of the canvas.
+        .force("charge", d3.forceManyBody().strength(-260).distanceMax(dim.w * 0.55))
         .force("center", d3.forceCenter(dim.w / 2, dim.h / 2))
-        .force("collide", d3.forceCollide().radius(function (d) { return radius(d) + 6; }));
+        // Gently pull every node toward the middle. Without this, separate
+        // (unconnected) blog↔section pairs drift to opposite edges and leave
+        // the canvas looking empty; forceX/forceY keep the whole graph
+        // gathered and centered regardless of connectivity.
+        .force("x", d3.forceX(dim.w / 2).strength(0.08))
+        .force("y", d3.forceY(dim.h / 2).strength(0.08))
+        .force("collide", d3.forceCollide().radius(function (d) { return radius(d) + 10; }));
 
       var link = root.append("g")
         .attr("class", "graph-links")
@@ -76,7 +84,14 @@
         .attr("class", function (d) { return "graph-node node-" + d.type; })
         .call(drag(simulation));
 
+      // Soft glow halo behind each node for depth.
       node.append("circle")
+        .attr("class", "graph-node-halo")
+        .attr("r", function (d) { return radius(d) + 6; })
+        .attr("fill", function (d) { return d.type === "blog" ? COLOR_BLOG : COLOR_SECTION; });
+
+      node.append("circle")
+        .attr("class", "graph-node-core")
         .attr("r", radius)
         .attr("fill", function (d) { return d.type === "blog" ? COLOR_BLOG : COLOR_SECTION; });
 
@@ -133,13 +148,15 @@
         var d2 = size();
         svg.attr("viewBox", [0, 0, d2.w, d2.h]);
         simulation.force("center", d3.forceCenter(d2.w / 2, d2.h / 2));
+        simulation.force("x", d3.forceX(d2.w / 2).strength(0.08));
+        simulation.force("y", d3.forceY(d2.h / 2).strength(0.08));
         simulation.alpha(0.3).restart();
       });
     }
 
     function radius(d) {
-      if (d.type === "section") return 5 + Math.min(d.count || 1, 6);
-      return 10;
+      if (d.type === "section") return 8 + Math.min(d.count || 1, 6) * 1.6;
+      return 13;
     }
 
     function showTip(event, d) {

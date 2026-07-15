@@ -49,14 +49,6 @@ blog_landing: true
             <span class="category-row-count">{{ child.total_count }} {% if child.total_count == 1 %}post{% else %}posts{% endif %}</span>
           </a>
           {%- endfor -%}
-          {%- assign items = section.pages | sort: "title" -%}
-          {%- for doc in items -%}
-          <a class="category-row" href="{{ doc.url | relative_url }}">
-            <span class="category-row-icon" aria-hidden="true">□</span>
-            <span class="category-row-name">{{ doc.title | default: doc.name }}</span>
-            <span class="category-row-count">1 post</span>
-          </a>
-          {%- endfor -%}
         </div>
       </details>
       {%- endunless -%}

@@ -8,7 +8,9 @@
     <a class="blog-nav-home{% if page.url == '/blogs/' %} active{% endif %}" href="{{ '/blogs/' | relative_url }}">// blogs</a>
     {%- for section in site.data.blog_sections -%}
       <div class="blog-nav-section" style="--section-depth: {{ section.depth }}">
-        <h3 class="blog-nav-title">{{ section.name }}</h3>
+        <h3 class="blog-nav-title">
+          <a href="{{ section.url | relative_url }}"{% if page.blog_section_path == section.path or page.blog_directory == section.path %} class="active"{% endif %}>{{ section.name }}</a>
+        </h3>
         {%- if section.pages.size > 0 -%}
         <ul class="blog-nav-list">
           {%- assign items = section.pages | sort: "title" -%}

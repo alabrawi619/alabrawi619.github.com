@@ -1,6 +1,20 @@
 # frozen_string_literal: true
 
 module Jekyll
+  class BlogSectionPage < PageWithoutAFile
+    def initialize(site, section)
+      slug_parts = section["path"].split("/").map { |part| Utils.slugify(part) }
+      super(site, site.source, File.join("blogs", *slug_parts), "index.html")
+
+      data["layout"] = "blog-section"
+      data["title"] = section["name"]
+      data["description"] = "#{section["count"]} #{section["count"] == 1 ? "blog" : "blogs"} in this section."
+      data["blog_section_path"] = section["path"]
+      data["blog_pages"] = section["all_pages"].sort_by { |page| page.data["title"].downcase }
+      data["permalink"] = section["url"]
+    end
+  end
+
   class BlogPages < Generator
     safe true
     priority :low
@@ -30,15 +44,19 @@ module Jekyll
             "depth" => index,
             "parent" => index.zero? ? nil : parts[0...-1].join("/"),
             "count" => 0,
-            "pages" => []
+            "pages" => [],
+            "all_pages" => [],
+            "url" => "/blogs/#{parts.map { |part| Utils.slugify(part) }.join("/")}/"
           }
           sections[path]["count"] += 1
+          sections[path]["all_pages"] << page
         end
 
         sections[directory_parts.join("/")]["pages"] << page unless directory_parts.empty?
       end
 
       site.data["blog_sections"] = sections.values.sort_by { |section| section["path"].downcase }
+      site.data["blog_sections"].each { |section| site.pages << BlogSectionPage.new(site, section) }
     end
   end
 end

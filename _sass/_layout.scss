@@ -255,6 +255,7 @@
 
   .post-card {
     flex: 1 1 280px;
+    // Account for the wrap's two side paddings and three gaps between four cards.
     max-width: calc(($wrap-max - 5 * $s-4) / 4);
   }
 }

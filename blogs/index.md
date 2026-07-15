@@ -14,10 +14,11 @@ blog_landing: true
     <div class="graph-legend" aria-label="Graph legend">
       <span class="legend-item"><span class="legend-dot legend-blog"></span>Blog</span>
       <span class="legend-item"><span class="legend-dot legend-section"></span>Section</span>
+      <span class="legend-item"><span class="legend-dot legend-tag"></span>Tag</span>
     </div>
   </div>
   <div class="graph-shell reveal">
-    <div id="knowledge-graph" data-src="{{ '/graph-data.json' | relative_url }}" role="img" aria-label="Force-directed graph of blogs and sections">
+    <div id="knowledge-graph" data-src="{{ '/graph-data.json' | relative_url }}" role="img" aria-label="Force-directed graph of blogs, sections, and tags">
       <p class="graph-empty" hidden>No blogs yet — the graph will grow as you publish.</p>
     </div>
     <div id="graph-tooltip" class="graph-tooltip" role="tooltip" hidden></div>
@@ -25,28 +26,32 @@ blog_landing: true
   <p class="graph-hint"><span>↗</span> Drag to rearrange · Scroll to zoom · Select a cyan node to read</p>
 </section>
 
-<section class="blog-directory" aria-labelledby="directory-title">
+<section class="blog-directory category-directory" aria-labelledby="directory-title">
   <div class="directory-head">
     <span class="graph-kicker">Index</span>
-    <h2 id="directory-title">Browse by section</h2>
+    <h2 id="directory-title">Categories</h2>
   </div>
-  <div class="section-grid">
+  <div class="category-list">
     {%- for section in site.data.blog_sections -%}
-    <article class="section-card" style="--section-depth: {{ section.depth }}">
-      <div class="section-card-head">
-        <span class="section-number">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
-        <span class="section-count">{{ section.total_count }} {% if section.total_count == 1 %}entry{% else %}entries{% endif %}</span>
-      </div>
-      <h3>{% if section.depth > 0 %}<span class="subsection-marker">↳</span>{% endif %}{{ section.name }}</h3>
-      {%- if section.pages.size > 0 %}
-      <ul>
-        {%- assign items = section.pages | sort: "title" -%}
-        {%- for doc in items -%}
-        <li><a href="{{ doc.url | relative_url }}"><span>{{ doc.title | default: doc.name }}</span><span aria-hidden="true">↗</span></a></li>
-        {%- endfor -%}
-      </ul>
-      {%- endif %}
-    </article>
+      {%- unless section.parent -%}
+      <details class="category-card" open>
+        <summary>
+          <span class="category-folder" aria-hidden="true">▰</span>
+          <a href="{{ section.url | relative_url }}">{{ section.name }}</a>
+          <span class="category-meta">{{ section.descendants.size }} {% if section.descendants.size == 1 %}category{% else %}categories{% endif %}, {{ section.total_count }} {% if section.total_count == 1 %}post{% else %}posts{% endif %}</span>
+          <span class="category-chevron" aria-hidden="true"></span>
+        </summary>
+        <div class="category-children">
+          {%- for child in section.descendants -%}
+          <a class="category-row" href="{{ child.url | relative_url }}">
+            <span class="category-row-icon" aria-hidden="true">□</span>
+            <span class="category-row-name">{{ child.name }}</span>
+            <span class="category-row-count">{{ child.total_count }} {% if child.total_count == 1 %}post{% else %}posts{% endif %}</span>
+          </a>
+          {%- endfor -%}
+        </div>
+      </details>
+      {%- endunless -%}
     {%- endfor -%}
   </div>
 </section>

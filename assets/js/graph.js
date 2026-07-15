@@ -36,10 +36,10 @@
     // Neon palette (kept in sync with SCSS variables).
     var COLOR_BLOG = "#00e5ff";
     var COLOR_SECTION = "#ff2bd6";
+    var COLOR_TAG = "#39ff9e";
 
     function render(data) {
       var dim = size();
-      setLayoutTargets(data, dim);
 
       var svg = d3.select(container)
         .append("svg")
@@ -57,18 +57,10 @@
         .on("zoom", function (event) { root.attr("transform", event.transform); }));
 
       var simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(function (d) { return d.id; }).distance(90).strength(0.5))
-        // Bound the repulsion so disconnected clusters don't fling apart to
-        // the far corners of the canvas.
-        .force("charge", d3.forceManyBody().strength(-260).distanceMax(dim.w * 0.55))
+        .force("link", d3.forceLink(data.links).id(function (d) { return d.id; }).distance(70).strength(0.6))
+        .force("charge", d3.forceManyBody().strength(-220))
         .force("center", d3.forceCenter(dim.w / 2, dim.h / 2))
-        // Gently pull every node toward the middle. Without this, separate
-        // (unconnected) blog↔section pairs drift to opposite edges and leave
-        // the canvas looking empty; forceX/forceY keep the whole graph
-        // gathered and centered regardless of connectivity.
-        .force("x", d3.forceX(function (d) { return d.targetX; }).strength(0.13))
-        .force("y", d3.forceY(function (d) { return d.targetY; }).strength(0.13))
-        .force("collide", d3.forceCollide().radius(function (d) { return radius(d) + 10; }));
+        .force("collide", d3.forceCollide().radius(function (d) { return radius(d) + 6; }));
 
       var link = root.append("g")
         .attr("class", "graph-links")
@@ -89,12 +81,12 @@
       node.append("circle")
         .attr("class", "graph-node-halo")
         .attr("r", function (d) { return radius(d) + 6; })
-        .attr("fill", function (d) { return d.type === "blog" ? COLOR_BLOG : COLOR_SECTION; });
+        .attr("fill", color);
 
       node.append("circle")
         .attr("class", "graph-node-core")
         .attr("r", radius)
-        .attr("fill", function (d) { return d.type === "blog" ? COLOR_BLOG : COLOR_SECTION; });
+        .attr("fill", color);
 
       node.append("text")
         .attr("class", "graph-label")
@@ -147,59 +139,35 @@
 
       window.addEventListener("resize", function () {
         var d2 = size();
-        setLayoutTargets(data, d2);
         svg.attr("viewBox", [0, 0, d2.w, d2.h]);
         simulation.force("center", d3.forceCenter(d2.w / 2, d2.h / 2));
-        simulation.force("x", d3.forceX(function (d) { return d.targetX; }).strength(0.13));
-        simulation.force("y", d3.forceY(function (d) { return d.targetY; }).strength(0.13));
         simulation.alpha(0.3).restart();
       });
     }
 
-    function setLayoutTargets(data, dim) {
-      var sections = data.nodes.filter(function (d) { return d.type === "section"; });
-      var sectionsById = {};
-      var ring = Math.min(dim.w, dim.h) * (sections.length > 1 ? 0.24 : 0);
-
-      sections.forEach(function (section, index) {
-        var angle = -Math.PI / 2 + (Math.PI * 2 * index / Math.max(sections.length, 1));
-        sectionsById[section.id] = section;
-        section.targetX = dim.w / 2 + Math.cos(angle) * ring;
-        section.targetY = dim.h / 2 + Math.sin(angle) * ring;
-        section.x = section.x == null ? section.targetX : section.x;
-        section.y = section.y == null ? section.targetY : section.y;
-      });
-
-      var blogsBySection = {};
-      data.nodes.filter(function (d) { return d.type === "blog"; }).forEach(function (blog) {
-        (blogsBySection[blog.section] = blogsBySection[blog.section] || []).push(blog);
-      });
-
-      Object.keys(blogsBySection).forEach(function (sectionName) {
-        var section = sectionsById["section::" + sectionName];
-        var blogs = blogsBySection[sectionName];
-        if (!section) return;
-        blogs.forEach(function (blog, index) {
-          var spread = (index - (blogs.length - 1) / 2) * 0.55;
-          var angle = Math.atan2(section.targetY - dim.h / 2, section.targetX - dim.w / 2) + spread;
-          blog.targetX = section.targetX + Math.cos(angle) * 92;
-          blog.targetY = section.targetY + Math.sin(angle) * 92;
-          blog.x = blog.x == null ? blog.targetX : blog.x;
-          blog.y = blog.y == null ? blog.targetY : blog.y;
-        });
-      });
+    function color(d) {
+      if (d.type === "blog") return COLOR_BLOG;
+      if (d.type === "tag") return COLOR_TAG;
+      return COLOR_SECTION;
     }
 
     function radius(d) {
       if (d.type === "section") return 8 + Math.min(d.count || 1, 6) * 1.6;
+      if (d.type === "tag") return 5 + Math.min(d.count || 1, 6);
       return 13;
     }
 
     function showTip(event, d) {
       if (!tooltip) return;
-      var html = d.type === "blog"
-        ? "<strong>" + escapeHtml(d.label) + "</strong><span>" + escapeHtml(d.section || "") + "</span>"
-        : "<strong>" + escapeHtml(d.label) + "</strong><span>" + (d.count || 0) + " blog" + ((d.count || 0) === 1 ? "" : "s") + "</span>";
+      var count = d.count || 0;
+      var html;
+      if (d.type === "blog") {
+        html = "<strong>" + escapeHtml(d.label) + "</strong><span>" + escapeHtml(d.section || "") + "</span>";
+      } else if (d.type === "tag") {
+        html = "<strong>#" + escapeHtml(d.label) + "</strong><span>" + count + " blog" + (count === 1 ? "" : "s") + "</span>";
+      } else {
+        html = "<strong>" + escapeHtml(d.label) + "</strong><span>" + count + " blog" + (count === 1 ? "" : "s") + "</span>";
+      }
       tooltip.innerHTML = html;
       tooltip.hidden = false;
       moveTip(event);

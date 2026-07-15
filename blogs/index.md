@@ -35,17 +35,19 @@ blog_landing: true
       {%- unless section.parent -%}
       <details class="category-card" open>
         <summary>
+          {%- assign total_category_count = section.descendants.size | plus: 1 -%}
           <span class="category-folder" aria-hidden="true">▰</span>
           <a href="{{ section.url | relative_url }}">{{ section.name }}</a>
-          <span class="category-meta">{{ section.descendants.size }} {% if section.descendants.size == 1 %}category{% else %}categories{% endif %}, {{ section.total_count }} {% if section.total_count == 1 %}post{% else %}posts{% endif %}</span>
+          <span class="category-meta">{{ total_category_count }} {% if total_category_count == 1 %}category{% else %}categories{% endif %}, {{ section.total_count }} {% if section.total_count == 1 %}post{% else %}posts{% endif %}</span>
           <span class="category-chevron" aria-hidden="true"></span>
         </summary>
         <div class="category-children">
-          {%- for child in section.descendants -%}
-          <a class="category-row" href="{{ child.url | relative_url }}">
+          {%- assign blogs = section.all_pages | sort: "title" -%}
+          {%- for blog in blogs -%}
+          <a class="category-row" href="{{ blog.url | relative_url }}">
             <span class="category-row-icon" aria-hidden="true">□</span>
-            <span class="category-row-name">{{ child.name }}</span>
-            <span class="category-row-count">{{ child.total_count }} {% if child.total_count == 1 %}post{% else %}posts{% endif %}</span>
+            <span class="category-row-name">{{ blog.title | default: blog.name }}</span>
+            <span class="category-row-count">1 post</span>
           </a>
           {%- endfor -%}
         </div>
